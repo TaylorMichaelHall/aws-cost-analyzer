@@ -1,0 +1,27 @@
+#!/bin/bash
+# AWS Cost Analysis - Enhanced wrapper script
+# Handles dependency management and runs the enhanced cost analysis tool
+
+set -e  # Exit on any error
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# Check if uv is installed
+if ! command -v uv &> /dev/null; then
+    echo "❌ uv is not installed. Please install uv first:"
+    echo "   curl -LsSf https://astral.sh/uv/install.sh | sh"
+    exit 1
+fi
+
+# Check if dependencies are installed (look for .venv directory and key packages)
+if [ ! -d ".venv" ] || ! uv run python -c "import scipy, pandas, matplotlib" &> /dev/null; then
+    echo "🔧 Installing/updating dependencies..."
+    uv sync
+    echo "✅ Dependencies ready"
+fi
+
+# Run the cost analysis tool (now using modular structure)
+echo "🚀 Running AWS Cost Analysis"
+exec uv run python -m aws_cost_analyzer.cli "$@"

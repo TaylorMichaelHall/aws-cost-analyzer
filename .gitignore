@@ -1,0 +1,84 @@
+# Data files - contain sensitive cost information
+data/*.csv
+data/*.json
+data/*.xlsx
+data/*.txt
+
+# Generated outputs - reports and visualizations
+outputs/*.png
+outputs/*.jpg
+outputs/*.pdf
+outputs/*.txt
+outputs/*.html
+
+# Keep directory structure
+!data/.gitkeep
+!outputs/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environment configuration
+.env
+.env.local
+.env.production
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+ENV/
+env.bak/
+venv.bak/
+
+# UV package manager
+.uv/
+
+# Ruff cache
+.ruff_cache/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp

@@ -1,0 +1,51 @@
+name: Lint, Format, Test, and Audit
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: uv sync
+    
+    - name: Format check with Black
+      run: uv run black --check --diff .
+    
+    - name: Lint with Ruff
+      run: uv run ruff check .
+    
+    - name: Type check with Ruff
+      run: uv run ruff check --select=F,E,W,I,N,UP,B,A,C4,DTZ,T10,DJ,EM,EXE,ISC,ICN,PIE,PT,Q,RSE,RET,SLF,SIM,TID,ARG,ERA,PD,PGH,PLR,PLW,FLY,NPY,AIR,PERF,FURB,LOG,RUF .
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+    
+    - name: Set up Python
+      run: uv python install 3.11
+    
+    - name: Install dependencies
+      run: uv sync
+    
+    - name: Security audit
+      run: uv run pip-audit
