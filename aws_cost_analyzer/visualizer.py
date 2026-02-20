@@ -10,6 +10,8 @@ import numpy as np
 import pandas as pd
 from scipy.stats import zscore
 
+from .utils import clean_service_name
+
 warnings.filterwarnings("ignore")
 
 # Constants
@@ -25,38 +27,6 @@ class Visualizer:
     def __init__(self, config, data_processor):
         self.config = config
         self.data_processor = data_processor
-
-    def _clean_service_name(self, service_name, max_length=16):
-        """Clean and abbreviate AWS service names for better readability"""
-        name = service_name
-
-        # Remove redundant prefixes
-        name = name.replace("Amazon ", "").replace("AWS ", "")
-
-        # Common AWS service abbreviations that are still readable
-        name = name.replace("Elastic Compute Cloud", "EC2")
-        name = name.replace("Relational Database Service", "RDS")
-        name = name.replace("Simple Storage Service", "S3")
-        name = name.replace("Elastic Load Balancing", "ELB")
-        name = name.replace("Virtual Private Cloud", "VPC")
-        name = name.replace("CloudFormation", "CFN")
-        name = name.replace("Application Load Balancer", "ALB")
-        name = name.replace("Network Load Balancer", "NLB")
-        name = name.replace("Elastic Container Service", "ECS")
-        name = name.replace("Elastic Kubernetes Service", "EKS")
-        name = name.replace("Lambda", "Lambda")  # Keep as is
-        name = name.replace("CloudFront", "CloudFront")  # Keep as is
-        name = name.replace("Route 53", "Route53")  # Remove space
-        name = name.replace("Simple Queue Service", "SQS")
-        name = name.replace("Simple Notification Service", "SNS")
-        name = name.replace("DynamoDB", "DynamoDB")  # Keep as is
-        name = name.replace("ElastiCache", "ElastiCache")  # Keep as is
-
-        # Truncate if still too long, but keep it readable
-        if len(name) > max_length:
-            name = name[: max_length - 3] + "..."
-
-        return name
 
     def create_visualizations(self, df, timestamp):  # noqa: PLR0912,PLR0915
         """Create comprehensive visualizations"""
@@ -224,7 +194,7 @@ class Visualizer:
                 if top_changes:
                     # Create more readable service names using helper function
                     services = [
-                        self._clean_service_name(s["service"]) for s in top_changes
+                        clean_service_name(s["service"]) for s in top_changes
                     ]
 
                     changes = [s["dollar_change"] for s in top_changes]
@@ -318,7 +288,7 @@ class Visualizer:
                 # Prepare data for pie chart with clean service names
                 pie_data = top_services.copy()
                 pie_labels = [
-                    self._clean_service_name(
+                    clean_service_name(
                         s.replace("($)", "").strip(), max_length=12
                     )
                     for s in pie_data.index

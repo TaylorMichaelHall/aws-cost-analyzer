@@ -15,6 +15,7 @@ from .analyzers import (
 from .aws_client import AWSClient
 from .config import Config
 from .data_processor import DataProcessor
+from .interactive_visualizer import InteractiveVisualizer
 from .visualizer import Visualizer
 
 # Constants
@@ -25,7 +26,7 @@ NEGATIVE_TREND_THRESHOLD = -2
 class AWSCostAnalyzer:
     """Main orchestrator for AWS cost analysis"""
 
-    def __init__(self, data_source=None, aws_profile=None):
+    def __init__(self, data_source=None, aws_profile=None, output_format="both"):
         """
         Initialize the AWS Cost Analyzer
 
@@ -33,11 +34,13 @@ class AWSCostAnalyzer:
             data_source: Path to CSV file, or None to fetch from AWS CLI
             aws_profile: AWS profile to use (defaults to default or
                 AWS_PROFILE env var)
+            output_format: "png", "html", or "both" (default "both")
         """
         self.data_source = data_source
         self.df = None
         self.timestamp = datetime.now(tz=timezone.utc).strftime("%Y%m%d_%H%M%S")
         self.session_id = f"aws_analysis_{self.timestamp}"
+        self.output_format = output_format
 
         # Initialize configuration
         self.config = Config()
@@ -48,6 +51,9 @@ class AWSCostAnalyzer:
         self.aws_client = AWSClient(self.config)
         self.data_processor = DataProcessor(self.config)
         self.visualizer = Visualizer(self.config, self.data_processor)
+        self.interactive_visualizer = InteractiveVisualizer(
+            self.config, self.data_processor
+        )
 
         # Initialize analyzers
         self.basic_analyzer = BasicAnalyzer(self.config, self.data_processor)
@@ -163,9 +169,22 @@ class AWSCostAnalyzer:
             "daily_avg": daily_avg,
         }
 
-    def create_visualizations(self):
-        """Create comprehensive visualizations"""
-        return self.visualizer.create_visualizations(self.df, self.timestamp)
+    def create_visualizations(self, forecast_results=None):
+        """Create comprehensive visualizations based on output_format"""
+        png_path = None
+        html_path = None
+
+        if self.output_format in ("png", "both"):
+            png_path = self.visualizer.create_visualizations(
+                self.df, self.timestamp
+            )
+
+        if self.output_format in ("html", "both"):
+            html_path = self.interactive_visualizer.create_visualizations(
+                self.df, self.timestamp, forecast_results=forecast_results
+            )
+
+        return png_path or html_path
 
     def run_full_analysis(self):
         """Run complete analysis suite with enhanced trending and forecasting"""
@@ -184,11 +203,11 @@ class AWSCostAnalyzer:
         # Enhanced analyses
         trending_results = self.trending_analyzer.analyze(self.df)
         anomalies = self.anomaly_detector.analyze(self.df)
-        self.forecasting_analyzer.analyze(self.df)
+        forecast_results = self.forecasting_analyzer.analyze(self.df)
         recommendations = self.recommendation_engine.analyze(self.df)
 
-        # Create visualizations
-        viz = self.create_visualizations()
+        # Create visualizations with forecast data
+        viz = self.create_visualizations(forecast_results=forecast_results)
 
         print("\n" + "=" * 60)
         print("✅ ANALYSIS COMPLETE")
@@ -198,7 +217,10 @@ class AWSCostAnalyzer:
         print("Generated files:")
         if viz:
             print(f"  📊 Dashboard: {Path(viz).name}")
-            print("  📊 Latest: aws_cost_dashboard_latest.png")
+            if self.output_format in ("png", "both"):
+                print("  📊 Latest PNG: aws_cost_dashboard_latest.png")
+            if self.output_format in ("html", "both"):
+                print("  📊 Latest HTML: aws_cost_dashboard_latest.html")
         print(
             "💡 Tip: To save this analysis, run: "
             "./cost-analysis [options] > my_analysis.txt"

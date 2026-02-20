@@ -58,14 +58,21 @@ Thank you for your interest in contributing to the AWS Cost Analyzer! This docum
 
 ```
 aws-cost-analyzer/
-├── aws_cost_suite.py    # Main analysis engine
-├── cost-analysis        # Wrapper script
-├── status.py            # Status overview
-├── pyproject.toml      # Project configuration
-├── .env.example        # Environment template
-├── data/               # CSV files and raw data
-├── outputs/            # Reports and visualizations
-└── scripts/            # Additional tools
+├── aws_cost_analyzer/       # Main package
+│   ├── cli.py               # Command-line interface
+│   ├── main.py              # Orchestrator
+│   ├── config.py            # Configuration management
+│   ├── visualizer.py        # Static PNG dashboard
+│   ├── interactive_visualizer.py  # Interactive HTML dashboard
+│   └── analyzers/           # Analysis modules
+│       ├── forecasting.py   # Forecast orchestration
+│       ├── forecast_models.py  # Model implementations
+│       └── ...
+├── cost-analysis            # Wrapper script
+├── pyproject.toml           # Project configuration
+├── .env.example             # Environment template
+├── data/                    # CSV data (gitignored)
+└── outputs/                 # Dashboards and reports (gitignored)
 ```
 
 ## 📝 Making Changes

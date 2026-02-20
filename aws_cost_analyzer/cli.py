@@ -117,6 +117,13 @@ def main():  # noqa: PLR0911,PLR0912,PLR0915
     parser.add_argument(
         "--no-viz", action="store_true", help="Skip visualization generation"
     )
+    parser.add_argument(
+        "--format",
+        type=str,
+        choices=["png", "html", "both"],
+        default="both",
+        help="Output format for dashboards (default: both)",
+    )
 
     args = parser.parse_args()
 
@@ -129,7 +136,9 @@ def main():  # noqa: PLR0911,PLR0912,PLR0915
         )
         print("=" * 60)
 
-    analyzer = AWSCostAnalyzer(aws_profile=args.aws_profile)
+    analyzer = AWSCostAnalyzer(
+        aws_profile=args.aws_profile, output_format=args.format
+    )
 
     if args.fetch:
         # Verify AWS setup before proceeding
