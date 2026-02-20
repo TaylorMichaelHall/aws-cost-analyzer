@@ -193,9 +193,7 @@ class Visualizer:
 
                 if top_changes:
                     # Create more readable service names using helper function
-                    services = [
-                        clean_service_name(s["service"]) for s in top_changes
-                    ]
+                    services = [clean_service_name(s["service"]) for s in top_changes]
 
                     changes = [s["dollar_change"] for s in top_changes]
 
@@ -288,9 +286,7 @@ class Visualizer:
                 # Prepare data for pie chart with clean service names
                 pie_data = top_services.copy()
                 pie_labels = [
-                    clean_service_name(
-                        s.replace("($)", "").strip(), max_length=12
-                    )
+                    clean_service_name(s.replace("($)", "").strip(), max_length=12)
                     for s in pie_data.index
                 ]
 

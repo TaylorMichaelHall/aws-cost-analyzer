@@ -136,9 +136,7 @@ def main():  # noqa: PLR0911,PLR0912,PLR0915
         )
         print("=" * 60)
 
-    analyzer = AWSCostAnalyzer(
-        aws_profile=args.aws_profile, output_format=args.format
-    )
+    analyzer = AWSCostAnalyzer(aws_profile=args.aws_profile, output_format=args.format)
 
     if args.fetch:
         # Verify AWS setup before proceeding

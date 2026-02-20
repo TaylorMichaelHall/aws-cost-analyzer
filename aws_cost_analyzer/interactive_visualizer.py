@@ -118,15 +118,11 @@ class InteractiveVisualizer:
             output_file = (
                 self.config.outputs_dir / f"aws_cost_dashboard_{timestamp}.html"
             )
-            fig.write_html(
-                str(output_file), include_plotlyjs="cdn", full_html=True
-            )
+            fig.write_html(str(output_file), include_plotlyjs="cdn", full_html=True)
             print(f"  Interactive dashboard saved to: {output_file}")
 
             latest_file = self.config.outputs_dir / "aws_cost_dashboard_latest.html"
-            fig.write_html(
-                str(latest_file), include_plotlyjs="cdn", full_html=True
-            )
+            fig.write_html(str(latest_file), include_plotlyjs="cdn", full_html=True)
             print(f"  Latest interactive dashboard: {latest_file}")
 
             return str(output_file)
@@ -310,9 +306,7 @@ class InteractiveVisualizer:
                     fillcolor="rgba(255,127,14,0.15)",
                     line=dict(color="rgba(255,127,14,0)"),
                     name="95% CI",
-                    hovertemplate=(
-                        "%{x|%Y-%m-%d}<br>CI: $%{y:.2f}<extra></extra>"
-                    ),
+                    hovertemplate=("%{x|%Y-%m-%d}<br>CI: $%{y:.2f}<extra></extra>"),
                     legendgroup="forecast",
                     showlegend=False,
                 ),
@@ -356,9 +350,7 @@ class InteractiveVisualizer:
 
             if earlier_avg > MIN_SERVICE_COST or recent_avg > MIN_SERVICE_COST:
                 dollar_change = recent_avg - earlier_avg
-                pct_change = (
-                    (recent_avg - earlier_avg) / max(earlier_avg, 0.01)
-                ) * 100
+                pct_change = ((recent_avg - earlier_avg) / max(earlier_avg, 0.01)) * 100
                 changes.append(
                     {
                         "service": service_name,
@@ -419,8 +411,13 @@ class InteractiveVisualizer:
             values.append(others)
 
         pie_colors = [
-            "#FF6B6B", "#4ECDC4", "#45B7D1",
-            "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8",
+            "#FF6B6B",
+            "#4ECDC4",
+            "#45B7D1",
+            "#96CEB4",
+            "#FFEAA7",
+            "#DDA0DD",
+            "#98D8C8",
         ]
 
         fig.add_trace(
@@ -498,8 +495,12 @@ class InteractiveVisualizer:
         top = service_totals.head(TOP_SERVICES_SPARKLINES)
 
         sparkline_colors = [
-            "#1f77b4", "#ff7f0e", "#2ca02c",
-            "#d62728", "#9467bd", "#8c564b",
+            "#1f77b4",
+            "#ff7f0e",
+            "#2ca02c",
+            "#d62728",
+            "#9467bd",
+            "#8c564b",
         ]
 
         for i, sc in enumerate(top.index):
@@ -527,10 +528,7 @@ class InteractiveVisualizer:
             )
 
             # Add forecast overlay if available
-            if (
-                forecast_results
-                and "service_forecasts" in forecast_results
-            ):
+            if forecast_results and "service_forecasts" in forecast_results:
                 svc_name_raw = sc.replace("($)", "").strip()
                 svc_fc = forecast_results["service_forecasts"].get(svc_name_raw)
                 if svc_fc:

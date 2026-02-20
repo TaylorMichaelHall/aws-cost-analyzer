@@ -175,9 +175,7 @@ class AWSCostAnalyzer:
         html_path = None
 
         if self.output_format in ("png", "both"):
-            png_path = self.visualizer.create_visualizations(
-                self.df, self.timestamp
-            )
+            png_path = self.visualizer.create_visualizations(self.df, self.timestamp)
 
         if self.output_format in ("html", "both"):
             html_path = self.interactive_visualizer.create_visualizations(

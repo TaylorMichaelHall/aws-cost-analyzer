@@ -174,8 +174,8 @@ class ForecastingAnalyzer(BaseAnalyzer):
                     avg_forecast = float(np.mean(svc_result.forecast_values))
                     current_avg = float(df[service_col].iloc[-7:].mean())
                     change_pct = (
-                        ((avg_forecast - current_avg) / max(current_avg, 0.01)) * 100
-                    )
+                        (avg_forecast - current_avg) / max(current_avg, 0.01)
+                    ) * 100
                     trend = "+" if change_pct > 0 else ""
                     print(
                         f"  {service_name:<30} "
@@ -246,9 +246,7 @@ class ForecastingAnalyzer(BaseAnalyzer):
                 "upper_ci": forecast_result.upper_ci.tolist(),
             },
             "service_forecasts": service_forecasts,
-            "historical_dates": [
-                d.strftime("%Y-%m-%d") for d in series.index
-            ],
+            "historical_dates": [d.strftime("%Y-%m-%d") for d in series.index],
             "historical_values": series.values.tolist(),
             "accuracy_metrics": [
                 {

@@ -6,7 +6,6 @@ from dataclasses import dataclass
 
 import numpy as np
 
-
 BACKTEST_HOLDOUT_DAYS = 7
 
 
@@ -41,9 +40,7 @@ class ForecastAccuracyTracker:
         train = series.iloc[:-holdout]
         actual = series.iloc[-holdout:].values
 
-        result = model.fit_and_forecast(
-            train, horizon=holdout, confidence_level=0.95
-        )
+        result = model.fit_and_forecast(train, horizon=holdout, confidence_level=0.95)
         if result is None:
             return None
 
@@ -55,7 +52,10 @@ class ForecastAccuracyTracker:
         nonzero = actual != 0
         if nonzero.any():
             mape = float(
-                np.mean(np.abs((actual[nonzero] - predicted[nonzero]) / actual[nonzero])) * 100
+                np.mean(
+                    np.abs((actual[nonzero] - predicted[nonzero]) / actual[nonzero])
+                )
+                * 100
             )
         else:
             mape = float("inf")

@@ -44,9 +44,7 @@ class Config:
             os.getenv("FORECAST_CONFIDENCE_LEVEL", "0.95")
         )
         self.forecast_horizon = int(os.getenv("FORECAST_HORIZON", "14"))
-        self.forecast_seasonal_period = int(
-            os.getenv("FORECAST_SEASONAL_PERIOD", "7")
-        )
+        self.forecast_seasonal_period = int(os.getenv("FORECAST_SEASONAL_PERIOD", "7"))
 
         # Create directories if they don't exist
         self._create_directories()
