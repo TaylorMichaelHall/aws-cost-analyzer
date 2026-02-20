@@ -5,7 +5,6 @@ Cost forecasting and prediction analysis with model competition
 from datetime import datetime, timedelta, timezone
 
 import numpy as np
-import pandas as pd
 
 from .base import BaseAnalyzer
 from .forecast_accuracy import ForecastAccuracyTracker
@@ -32,10 +31,7 @@ class ForecastingAnalyzer(BaseAnalyzer):
 
     def _prepare_series(self, df, column="Total costs($)"):
         """Convert DataFrame column to a daily-frequency Series with DatetimeIndex"""
-        series = df.set_index("Date")[column].sort_index()
-        series = series.asfreq("D")
-        series = series.ffill()
-        return series
+        return df.set_index("Date")[column].sort_index().asfreq("D").ffill()
 
     def _get_all_models(self):
         """Return all available forecast models"""
@@ -88,7 +84,7 @@ class ForecastingAnalyzer(BaseAnalyzer):
             pass
         return None
 
-    def run_cost_forecasting(self, df):
+    def run_cost_forecasting(self, df):  # noqa: PLR0912, PLR0915
         """Implement cost forecasting using model competition"""
         if df is None or len(df) < MIN_DAYS_FOR_FORECASTING:
             return None

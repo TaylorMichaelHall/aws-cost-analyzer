@@ -35,7 +35,7 @@ class InteractiveVisualizer:
         Args:
             df: Prepared DataFrame with cost data
             timestamp: Timestamp string for file naming
-            forecast_results: Optional dict from ForecastingAnalyzer.analyze()
+            forecast_results: Optional dict from ForecastingAnalyzer
 
         Returns:
             str path to HTML file, or None on failure
@@ -44,7 +44,7 @@ class InteractiveVisualizer:
             return None
 
         try:
-            import plotly.graph_objects as go
+            import plotly.graph_objects as go  # noqa: F401
             from plotly.subplots import make_subplots
         except ImportError:
             print("Warning: plotly not installed, skipping interactive dashboard")
@@ -76,42 +76,32 @@ class InteractiveVisualizer:
                 ],
             )
 
-            # Panel 1: Daily Cost Timeline (R1C1)
+            # Panel 1-8
             self._add_daily_timeline(fig, df, row=1, col=1)
-
-            # Panel 2: Day-of-Week Patterns (R1C2)
             self._add_dow_patterns(fig, df, row=1, col=2)
-
-            # Panel 3: Cost Trend + Anomalies (R2C1)
             self._add_trend_anomalies(fig, df, row=2, col=1)
-
-            # Panel 4: Cost Forecast (R2C2)
             self._add_forecast(fig, df, forecast_results, row=2, col=2)
-
-            # Panel 5: Service Cost Changes (R3C1)
             self._add_service_changes(fig, df, row=3, col=1)
-
-            # Panel 6: Service Breakdown Pie (R3C2)
             self._add_service_pie(fig, df, row=3, col=2)
-
-            # Panel 7: Cost Distribution (R4C1)
             self._add_distribution(fig, df, row=4, col=1)
-
-            # Panel 8: Per-Service Sparklines (R4C2)
             self._add_service_sparklines(fig, df, forecast_results, row=4, col=2)
 
             # Layout
             analysis_date = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M")
             fig.update_layout(
-                title=dict(
-                    text=f"AWS Cost Analysis Dashboard - {analysis_date}",
-                    font=dict(size=20),
-                ),
+                title={
+                    "text": (f"AWS Cost Analysis Dashboard - {analysis_date}"),
+                    "font": {"size": 20},
+                },
                 template="plotly_white",
                 height=1600,
                 width=1400,
                 showlegend=True,
-                legend=dict(orientation="h", yanchor="bottom", y=-0.02),
+                legend={
+                    "orientation": "h",
+                    "yanchor": "bottom",
+                    "y": -0.02,
+                },
             )
 
             # Save
@@ -135,7 +125,13 @@ class InteractiveVisualizer:
         import plotly.graph_objects as go
 
         months = sorted(df["Month"].unique())
-        colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
+        colors = [
+            "#1f77b4",
+            "#ff7f0e",
+            "#2ca02c",
+            "#d62728",
+            "#9467bd",
+        ]
 
         for i, month in enumerate(months):
             month_data = df[df["Month"] == month]
@@ -145,9 +141,11 @@ class InteractiveVisualizer:
                     y=month_data["Total costs($)"],
                     mode="lines+markers",
                     name=month,
-                    line=dict(color=colors[i % len(colors)], width=2),
-                    marker=dict(size=5),
-                    hovertemplate="Day %{x}<br>Cost: $%{y:.2f}<extra>%{fullData.name}</extra>",
+                    line={"color": colors[i % len(colors)], "width": 2},
+                    marker={"size": 5},
+                    hovertemplate=(
+                        "Day %{x}<br>Cost: $%{y:.2f}<extra>%{fullData.name}</extra>"
+                    ),
                     legendgroup="timeline",
                 ),
                 row=row,
@@ -177,7 +175,7 @@ class InteractiveVisualizer:
                 x=dow_data["DayOfWeek"],
                 y=dow_data["Total costs($)"],
                 marker_color=colors,
-                hovertemplate="%{x}<br>Avg Cost: $%{y:.2f}<extra></extra>",
+                hovertemplate=("%{x}<br>Avg Cost: $%{y:.2f}<extra></extra>"),
                 showlegend=False,
             ),
             row=row,
@@ -197,8 +195,8 @@ class InteractiveVisualizer:
                 y=df["Total costs($)"],
                 mode="lines",
                 name="Daily Cost",
-                line=dict(color="#1f77b4", width=2),
-                hovertemplate="%{x|%Y-%m-%d}<br>Cost: $%{y:.2f}<extra></extra>",
+                line={"color": "#1f77b4", "width": 2},
+                hovertemplate=("%{x|%Y-%m-%d}<br>Cost: $%{y:.2f}<extra></extra>"),
                 legendgroup="trend",
                 showlegend=False,
             ),
@@ -217,8 +215,8 @@ class InteractiveVisualizer:
                 y=trend_line,
                 mode="lines",
                 name=f"Trend: ${trend_coeffs[0]:+.2f}/day",
-                line=dict(color="red", width=2, dash="dash"),
-                hovertemplate="%{x|%Y-%m-%d}<br>Trend: $%{y:.2f}<extra></extra>",
+                line={"color": "red", "width": 2, "dash": "dash"},
+                hovertemplate=("%{x|%Y-%m-%d}<br>Trend: $%{y:.2f}<extra></extra>"),
                 legendgroup="trend",
             ),
             row=row,
@@ -240,11 +238,16 @@ class InteractiveVisualizer:
                     y=outlier_df["Total costs($)"],
                     mode="markers",
                     name="Anomalies",
-                    marker=dict(color="red", size=10, symbol="diamond"),
+                    marker={
+                        "color": "red",
+                        "size": 10,
+                        "symbol": "diamond",
+                    },
                     customdata=outlier_z,
                     hovertemplate=(
                         "%{x|%Y-%m-%d}<br>Cost: $%{y:.2f}"
-                        "<br>Z-score: %{customdata:.1f}<extra></extra>"
+                        "<br>Z-score: %{customdata:.1f}"
+                        "<extra></extra>"
                     ),
                     legendgroup="trend",
                 ),
@@ -266,8 +269,8 @@ class InteractiveVisualizer:
                 y=recent["Total costs($)"],
                 mode="lines",
                 name="Historical",
-                line=dict(color="#1f77b4", width=2),
-                hovertemplate="%{x|%Y-%m-%d}<br>Cost: $%{y:.2f}<extra></extra>",
+                line={"color": "#1f77b4", "width": 2},
+                hovertemplate=("%{x|%Y-%m-%d}<br>Cost: $%{y:.2f}<extra></extra>"),
                 legendgroup="forecast",
                 showlegend=False,
             ),
@@ -283,14 +286,21 @@ class InteractiveVisualizer:
             upper = np.array(fs["upper_ci"])
 
             # Forecast line
+            best = forecast_results.get("best_model", "Model")
             fig.add_trace(
                 go.Scatter(
                     x=dates,
                     y=values,
                     mode="lines",
-                    name=f"Forecast ({forecast_results.get('best_model', 'Model')})",
-                    line=dict(color="#ff7f0e", width=2, dash="dash"),
-                    hovertemplate="%{x|%Y-%m-%d}<br>Predicted: $%{y:.2f}<extra></extra>",
+                    name=f"Forecast ({best})",
+                    line={
+                        "color": "#ff7f0e",
+                        "width": 2,
+                        "dash": "dash",
+                    },
+                    hovertemplate=(
+                        "%{x|%Y-%m-%d}<br>Predicted: $%{y:.2f}<extra></extra>"
+                    ),
                     legendgroup="forecast",
                 ),
                 row=row,
@@ -304,7 +314,7 @@ class InteractiveVisualizer:
                     y=np.concatenate([upper, lower[::-1]]),
                     fill="toself",
                     fillcolor="rgba(255,127,14,0.15)",
-                    line=dict(color="rgba(255,127,14,0)"),
+                    line={"color": "rgba(255,127,14,0)"},
                     name="95% CI",
                     hovertemplate=("%{x|%Y-%m-%d}<br>CI: $%{y:.2f}<extra></extra>"),
                     legendgroup="forecast",
@@ -314,7 +324,7 @@ class InteractiveVisualizer:
                 col=col,
             )
         else:
-            # No forecast data - show placeholder text via annotation
+            # No forecast data
             fig.add_annotation(
                 text="Insufficient data for forecasting",
                 xref=f"x{self._axis_num(row, col)}",
@@ -324,7 +334,7 @@ class InteractiveVisualizer:
                 xanchor="center",
                 yanchor="middle",
                 showarrow=False,
-                font=dict(size=14, color="gray"),
+                font={"size": 14, "color": "gray"},
             )
 
         fig.update_xaxes(title_text="Date", row=row, col=col)
@@ -404,7 +414,7 @@ class InteractiveVisualizer:
             clean_service_name(s.replace("($)", "").strip(), max_length=12)
             for s in top.index
         ]
-        values = top.values.tolist()
+        values = top.to_numpy().tolist()
 
         if others > 0:
             labels.append("Others")
@@ -424,8 +434,10 @@ class InteractiveVisualizer:
             go.Pie(
                 labels=labels,
                 values=values,
-                marker=dict(colors=pie_colors[: len(labels)]),
-                hovertemplate="%{label}<br>$%{value:,.2f}<br>%{percent}<extra></extra>",
+                marker={"colors": pie_colors[: len(labels)]},
+                hovertemplate=(
+                    "%{label}<br>$%{value:,.2f}<br>%{percent}<extra></extra>"
+                ),
                 textinfo="label+percent",
                 textfont_size=10,
             ),
@@ -445,21 +457,22 @@ class InteractiveVisualizer:
                 marker_color="skyblue",
                 marker_line_color="black",
                 marker_line_width=1,
-                hovertemplate="Range: $%{x:.0f}<br>Count: %{y}<extra></extra>",
+                hovertemplate=("Range: $%{x:.0f}<br>Count: %{y}<extra></extra>"),
                 showlegend=False,
             ),
             row=row,
             col=col,
         )
 
-        # Mean and median as vertical line traces (avoids add_vline bug with domain subplots)
+        # Mean and median as vertical line traces
+        # (avoids add_vline bug with domain subplots)
         y_max = costs.max() * 0.9
         fig.add_trace(
             go.Scatter(
                 x=[costs.mean(), costs.mean()],
                 y=[0, y_max],
                 mode="lines",
-                line=dict(color="red", width=2, dash="dash"),
+                line={"color": "red", "width": 2, "dash": "dash"},
                 name=f"Mean: ${costs.mean():.0f}",
                 legendgroup="dist",
                 showlegend=True,
@@ -472,7 +485,7 @@ class InteractiveVisualizer:
                 x=[costs.median(), costs.median()],
                 y=[0, y_max],
                 mode="lines",
-                line=dict(color="green", width=2, dash="dash"),
+                line={"color": "green", "width": 2, "dash": "dash"},
                 name=f"Median: ${costs.median():.0f}",
                 legendgroup="dist",
                 showlegend=True,
@@ -515,7 +528,7 @@ class InteractiveVisualizer:
                     y=df[sc],
                     mode="lines",
                     name=service_name,
-                    line=dict(color=color, width=1.5),
+                    line={"color": color, "width": 1.5},
                     hovertemplate=(
                         f"{service_name}<br>"
                         "%{x|%Y-%m-%d}<br>$%{y:.2f}<extra></extra>"
@@ -539,10 +552,15 @@ class InteractiveVisualizer:
                             x=fc_dates,
                             y=fc_values,
                             mode="lines",
-                            line=dict(color=color, width=1.5, dash="dot"),
+                            line={
+                                "color": color,
+                                "width": 1.5,
+                                "dash": "dot",
+                            },
                             hovertemplate=(
                                 f"{service_name} (forecast)<br>"
-                                "%{x|%Y-%m-%d}<br>$%{y:.2f}<extra></extra>"
+                                "%{x|%Y-%m-%d}<br>"
+                                "$%{y:.2f}<extra></extra>"
                             ),
                             legendgroup="sparklines",
                             showlegend=False,
@@ -556,6 +574,6 @@ class InteractiveVisualizer:
 
     @staticmethod
     def _axis_num(row, col):
-        """Convert row/col to plotly axis number (1-indexed, left-to-right, top-to-bottom)"""
+        """Convert row/col to plotly axis number."""
         idx = (row - 1) * 2 + col
         return "" if idx == 1 else str(idx)

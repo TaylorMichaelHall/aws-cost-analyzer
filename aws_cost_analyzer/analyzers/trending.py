@@ -87,7 +87,7 @@ class TrendingAnalyzer(BaseAnalyzer):
                 continue
 
             x = np.arange(len(valid_data))
-            slope, intercept, r_value, p_value, std_err = stats.linregress(
+            slope, _intercept, r_value, p_value, _std_err = stats.linregress(
                 x, valid_data.values
             )
 

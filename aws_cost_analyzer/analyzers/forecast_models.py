@@ -7,6 +7,10 @@ from dataclasses import dataclass, field
 import numpy as np
 import pandas as pd
 
+# Constants
+MIN_SEASONAL_DATA_POINTS = 14
+MIN_QUADRATIC_DATA_POINTS = 10
+
 
 @dataclass
 class ForecastResult:
@@ -48,7 +52,7 @@ class HoltWintersModel:
             from scipy.stats import norm
             from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
-            seasonal_period = 7 if len(series) >= 14 else None
+            seasonal_period = 7 if len(series) >= MIN_SEASONAL_DATA_POINTS else None
             seasonal = "add" if seasonal_period else None
 
             model = ExponentialSmoothing(
@@ -76,14 +80,15 @@ class HoltWintersModel:
                 freq="D",
             )
 
+            fc_np = forecast_values.to_numpy()
             return ForecastResult(
                 model_name=self.name,
-                forecast_values=forecast_values.values,
+                forecast_values=fc_np,
                 forecast_dates=forecast_dates,
-                lower_ci=forecast_values.values - ci_width,
-                upper_ci=forecast_values.values + ci_width,
-                fitted_values=fitted_values.values,
-                residuals=residuals.values,
+                lower_ci=fc_np - ci_width,
+                upper_ci=fc_np + ci_width,
+                fitted_values=fitted_values.to_numpy(),
+                residuals=residuals.to_numpy(),
                 residual_std=residual_std,
                 confidence_level=confidence_level,
                 metadata={"seasonal_period": seasonal_period},
@@ -114,14 +119,14 @@ class SeasonalDecompositionModel:
 
             # Extrapolate trend with linear regression
             x = np.arange(len(trend))
-            coeffs = np.polyfit(x, trend.values, 1)
+            coeffs = np.polyfit(x, trend.to_numpy(), 1)
 
             # Forecast trend
             future_x = np.arange(len(trend), len(trend) + horizon)
             trend_forecast = np.polyval(coeffs, future_x)
 
             # Repeat seasonal pattern
-            seasonal_cycle = seasonal.values[-period:]
+            seasonal_cycle = seasonal.to_numpy()[-period:]
             seasonal_forecast = np.array(
                 [seasonal_cycle[i % period] for i in range(horizon)]
             )
@@ -130,8 +135,8 @@ class SeasonalDecompositionModel:
 
             # Fitted values: trend + seasonal (aligned to original)
             fitted_values = np.full(len(series), np.nan)
-            trend_vals = result.trend.values
-            seasonal_vals = result.seasonal.values
+            trend_vals = result.trend.to_numpy()
+            seasonal_vals = result.seasonal.to_numpy()
             for i in range(len(series)):
                 if not np.isnan(trend_vals[i]):
                     fitted_values[i] = trend_vals[i] + seasonal_vals[i]
@@ -157,7 +162,7 @@ class SeasonalDecompositionModel:
                 lower_ci=forecast_values - ci_width,
                 upper_ci=forecast_values + ci_width,
                 fitted_values=fitted_values,
-                residuals=residuals.values,
+                residuals=residuals.to_numpy(),
                 residual_std=residual_std,
                 confidence_level=confidence_level,
                 metadata={"period": period, "trend_slope": coeffs[0]},
@@ -186,7 +191,7 @@ class WeightedMovingAverageModel:
             weights = np.exp(np.linspace(-1, 0, window))
             weights /= weights.sum()
 
-            weighted_avg = float(np.average(recent.values, weights=weights))
+            weighted_avg = float(np.average(recent.to_numpy(), weights=weights))
             forecast_values = np.full(horizon, weighted_avg)
 
             # Fitted values: rolling weighted average
@@ -195,7 +200,7 @@ class WeightedMovingAverageModel:
                 segment = series.iloc[i - window : i]
                 w = np.exp(np.linspace(-1, 0, len(segment)))
                 w /= w.sum()
-                fitted_values[i - 1] = np.average(segment.values, weights=w)
+                fitted_values[i - 1] = np.average(segment.to_numpy(), weights=w)
 
             fitted_series = pd.Series(fitted_values, index=series.index)
             residuals = series - fitted_series
@@ -218,7 +223,7 @@ class WeightedMovingAverageModel:
                 lower_ci=forecast_values - ci_width,
                 upper_ci=forecast_values + ci_width,
                 fitted_values=fitted_values,
-                residuals=residuals.values,
+                residuals=residuals.to_numpy(),
                 residual_std=residual_std,
                 confidence_level=confidence_level,
                 metadata={"window": window, "weighted_avg": weighted_avg},
@@ -241,15 +246,15 @@ class PolynomialTrendModel:
             from scipy.stats import norm
 
             x = np.arange(len(series))
-            degree = 2 if len(series) >= 10 else 1
+            degree = 2 if len(series) >= MIN_QUADRATIC_DATA_POINTS else 1
 
-            coeffs = np.polyfit(x, series.values, degree)
+            coeffs = np.polyfit(x, series.to_numpy(), degree)
             fitted_values = np.polyval(coeffs, x)
 
             future_x = np.arange(len(series), len(series) + horizon)
             forecast_values = np.polyval(coeffs, future_x)
 
-            residuals = series.values - fitted_values
+            residuals = series.to_numpy() - fitted_values
             residual_std = float(np.std(residuals))
 
             z = norm.ppf(1 - (1 - confidence_level) / 2)
@@ -272,7 +277,10 @@ class PolynomialTrendModel:
                 residuals=residuals,
                 residual_std=residual_std,
                 confidence_level=confidence_level,
-                metadata={"degree": degree, "coefficients": coeffs.tolist()},
+                metadata={
+                    "degree": degree,
+                    "coefficients": coeffs.tolist(),
+                },
             )
         except Exception:
             return None

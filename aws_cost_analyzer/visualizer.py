@@ -307,7 +307,7 @@ class Visualizer:
                     "#98D8C8",
                 ]
 
-                wedges, texts, autotexts = ax6.pie(
+                _wedges, _texts, autotexts = ax6.pie(
                     pie_data.values,
                     labels=pie_labels,
                     autopct=lambda pct: f"${pie_data.sum() * pct / 100:.0f}\n"
